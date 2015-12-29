@@ -58,4 +58,6 @@
     <string name="folder_settings_add_folder_maxdepth_alert_title">Maximal depth reached</string>
     <string name="folder_settings_add_folder_maxdepth_alert_message">The maximal depth has been reached. No more subfolders possible!</string>
     <string name="folder_settings_add_folder_maxdepth_alert_OK">OK</string>
+
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 </resources>

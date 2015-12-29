@@ -7,6 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toolbar;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
@@ -17,6 +19,7 @@ public class MainActivity extends Activity {
 
     private Toolbar mToolbar;
     private EditFolderFragment mFragment;
+    private AdView mAdView;
     private Tracker mTracker;
 
     @Override
@@ -29,6 +32,9 @@ public class MainActivity extends Activity {
 
         mToolbar = (Toolbar)findViewById(R.id.activity_main_toolbar);
         mFragment = (EditFolderFragment)getFragmentManager().findFragmentById(R.id.activity_main_editfolder_fragment);
+        mAdView = (AdView)findViewById(R.id.activity_main_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 
         setActionBar(mToolbar);
     }
