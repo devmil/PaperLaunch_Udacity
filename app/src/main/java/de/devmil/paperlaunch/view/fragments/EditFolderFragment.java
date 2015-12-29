@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -458,18 +459,25 @@ public class EditFolderFragment extends Fragment implements LoaderManager.Loader
         return local.folder.getId();
     }
 
-    private ScheduledFuture<?> mScheduledNotifyDataChanged;
+    private AsyncTask<Object, Object, Object> mNotifyChangedTask = null;
 
-    private void notifyDataChanged() {
-        if(mScheduledNotifyDataChanged != null) {
-            mScheduledNotifyDataChanged.cancel(false);
+    private synchronized void notifyDataChanged() {
+        if(mNotifyChangedTask != null) {
+            mNotifyChangedTask.cancel(false);
         }
-        mScheduledNotifyDataChanged = sNotifyDataChangedWorker.schedule(new Runnable() {
+        mNotifyChangedTask = new AsyncTask<Object, Object, Object>() {
             @Override
-            public void run() {
+            protected Object doInBackground(Object... params) {
+                try {
+                    Thread.sleep(400);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 LauncherOverlayService.notifyDataChanged(getActivity());
+                return null;
             }
-        }, 1, TimeUnit.SECONDS);
+        };
+        mNotifyChangedTask.execute();
     }
 
     private class EntriesItemAnimator extends DefaultItemAnimator

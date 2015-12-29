@@ -200,12 +200,18 @@ public class LauncherOverlayService extends Service {
     }
 
     public static void notifyDataChanged(Context context) {
+        if(context == null) {
+            return;
+        }
         Intent launchServiceIntent = new Intent(context, LauncherOverlayService.class);
         launchServiceIntent.setAction(ACTION_NOTIFYDATACHANGED);
         context.startService(launchServiceIntent);
     }
 
     public static void notifyConfigChanged(Context context) {
+        if(context == null) {
+            return;
+        }
         Intent launchServiceIntent = new Intent(context, LauncherOverlayService.class);
         launchServiceIntent.setAction(ACTION_NOTIFYCONFIGCHANGED);
         context.startService(launchServiceIntent);
