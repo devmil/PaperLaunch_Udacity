@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toolbar;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 import de.devmil.paperlaunch.view.fragments.EditFolderFragment;
 
 public class EditFolderActivity extends Activity {
@@ -15,6 +18,7 @@ public class EditFolderActivity extends Activity {
     private static final String ARG_FOLDERID = "folderId";
 
     private Toolbar mToolbar;
+    private Tracker mTracker;
 
     public static Intent createLaunchIntent(Context context, long folderId) {
         Intent result = new Intent(context, EditFolderActivity.class);
@@ -26,6 +30,8 @@ public class EditFolderActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_folder);
+
+        mTracker = ((PaperLaunchApp)getApplication()).getDefaultTracker();
 
         mToolbar = (Toolbar)findViewById(R.id.activity_edit_folder_toolbar);
 
@@ -67,5 +73,12 @@ public class EditFolderActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mTracker.setScreenName("Edit folder");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 }

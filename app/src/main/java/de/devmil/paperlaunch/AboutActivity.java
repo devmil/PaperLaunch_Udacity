@@ -23,6 +23,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 import de.devmil.common.licensing.LicenseManager;
 import de.devmil.common.licensing.PackageInfo;
 
@@ -33,11 +36,14 @@ public class AboutActivity extends Activity {
     private Toolbar mToolbar;
     private LicenseManager mLicenseManager;
     private ListView mLicenseList;
+    private Tracker mTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+
+        mTracker = ((PaperLaunchApp)getApplication()).getDefaultTracker();
 
         mToolbar = (Toolbar)findViewById(R.id.activity_about_toolbar);
         mLicenseList = (ListView)findViewById(R.id.activity_about_info_listView);
@@ -50,6 +56,13 @@ public class AboutActivity extends Activity {
         LicenseEntryAdapter adapter = new LicenseEntryAdapter(this, mLicenseManager.getLicenseInfo().getPackages().toArray(new PackageInfo[0]));
 
         mLicenseList.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mTracker.setScreenName("About");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     class LicenseEntryAdapter extends ArrayAdapter<PackageInfo>
@@ -85,7 +98,7 @@ public class AboutActivity extends Activity {
 
             PackageInfo item = getItem(position);
 
-            int drawableId = getContext().getResources().getIdentifier(item.getIconName(), "drawable", "de.devmil.paperlaunch");
+            int drawableId = getContext().getResources().getIdentifier(item.getIconName(), "drawable", "de.devmil.paperlaunch.udacity");
 
             holder.image.setImageResource(drawableId);
             holder.name.setText(item.getName());

@@ -1,0 +1,45 @@
+{
+  "project_info": {
+    "project_id": "paperlaunch",
+    "project_number": "1025258807873",
+    "name": "PaperLaunch"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025258807873:android:cc0ad1565342575b",
+        "client_id": "android:de.devmil.paperlaunch.udacity",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "de.devmil.paperlaunch.udacity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-71830359-1"
+          }
+        },
+        "cloud_messaging_service": {
+          "status": 1,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 1
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

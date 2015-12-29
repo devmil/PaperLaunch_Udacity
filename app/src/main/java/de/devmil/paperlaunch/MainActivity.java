@@ -7,6 +7,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toolbar;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 import de.devmil.paperlaunch.service.LauncherOverlayService;
 import de.devmil.paperlaunch.view.fragments.EditFolderFragment;
 
@@ -14,12 +17,15 @@ public class MainActivity extends Activity {
 
     private Toolbar mToolbar;
     private EditFolderFragment mFragment;
+    private Tracker mTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LauncherOverlayService.launch(this);
         setContentView(R.layout.activity_main);
+
+        mTracker = ((PaperLaunchApp)getApplication()).getDefaultTracker();
 
         mToolbar = (Toolbar)findViewById(R.id.activity_main_toolbar);
         mFragment = (EditFolderFragment)getFragmentManager().findFragmentById(R.id.activity_main_editfolder_fragment);
@@ -52,5 +58,12 @@ public class MainActivity extends Activity {
         });
 
         return result;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mTracker.setScreenName("Main");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 }

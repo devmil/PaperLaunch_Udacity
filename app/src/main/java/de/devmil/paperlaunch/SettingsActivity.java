@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.Toolbar;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 import java.util.concurrent.TimeUnit;
 
 import de.devmil.paperlaunch.config.UserSettings;
@@ -22,11 +25,14 @@ public class SettingsActivity extends Activity implements SettingsFragment.IActi
     private Toolbar mToolbar;
     private LinearLayout mActivationIndicatorContainer;
     private SettingsFragment mFragment;
+    private Tracker mTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        mTracker = ((PaperLaunchApp)getApplication()).getDefaultTracker();
 
         mToolbar = (Toolbar)findViewById(R.id.activity_settings_toolbar);
 
@@ -107,5 +113,8 @@ public class SettingsActivity extends Activity implements SettingsFragment.IActi
     protected void onResume() {
         super.onResume();
         updateActivationIndicator();
+
+        mTracker.setScreenName("Settings");
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 }
