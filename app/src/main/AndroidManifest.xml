@@ -76,6 +76,11 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/paper_launch_widget_info" />
         </receiver>
+
+        <service
+            android:name="com.google.android.gms.analytics.AnalyticsService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>
