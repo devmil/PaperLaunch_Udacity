@@ -5,11 +5,11 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name="PaperLaunchApp"
+        android:name=".PaperLaunchApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -61,10 +61,21 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.devmil.paperlaunch.MainActivity" />
         </activity>
+
         <provider
-            android:authorities="de.devmil.paperlaunch"
             android:name=".storage.EntriesProvider"
+            android:authorities="de.devmil.paperlaunch"
             android:exported="false" />
+
+        <receiver android:name=".PaperLaunchWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/paper_launch_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

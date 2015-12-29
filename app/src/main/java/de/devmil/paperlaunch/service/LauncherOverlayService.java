@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.devmil.paperlaunch.PaperLaunchWidget;
 import de.devmil.paperlaunch.R;
 import de.devmil.paperlaunch.MainActivity;
 import de.devmil.paperlaunch.model.IEntry;
@@ -143,11 +144,13 @@ public class LauncherOverlayService extends Service {
             mState.setIsActive(false);
             mState.save(this);
             adaptState(false);
+            PaperLaunchWidget.updateAppWidgets(this, false);
         }
         else if(intent != null && ACTION_PLAY.equals(intent.getAction())) {
             mState.setIsActive(true);
             mState.save(this);
             adaptState(false);
+            PaperLaunchWidget.updateAppWidgets(this, true);
         } else if(intent != null && ACTION_ENSUREACTIVATIONTAPPABLE.equals(intent.getAction())) {
             reloadTouchReceiver();
         }
@@ -191,6 +194,13 @@ public class LauncherOverlayService extends Service {
             unregisterReceiver(mScreenOnOffReceiver);
             mScreenOnOffReceiver = null;
         }
+    }
+
+    public static Intent createControlIntent(Context context, boolean shouldStart) {
+        Intent controlIntent = new Intent(shouldStart ? ACTION_PLAY : ACTION_PAUSE);
+        controlIntent.setClass(context, LauncherOverlayService.class);
+
+        return controlIntent;
     }
 
     public static void launch(Context context) {
@@ -533,8 +543,7 @@ public class LauncherOverlayService extends Service {
         ;
 
         if(mState.getIsActive()) {
-            Intent pauseIntent = new Intent(ACTION_PAUSE);
-            pauseIntent.setClass(this, LauncherOverlayService.class);
+            Intent pauseIntent = createControlIntent(this, false);
             PendingIntent pendingPauseIntent = PendingIntent.getService(
                     this,
                     0,
@@ -546,8 +555,7 @@ public class LauncherOverlayService extends Service {
                 pendingPauseIntent
             ));
         } else {
-            Intent playIntent = new Intent(ACTION_PLAY);
-            playIntent.setClass(this, LauncherOverlayService.class);
+            Intent playIntent = createControlIntent(this, true);
             PendingIntent pendingPlayIntent = PendingIntent.getService(
                     this,
                     0,
