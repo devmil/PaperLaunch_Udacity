@@ -58,6 +58,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.devmil.paperlaunch.MainActivity" />
         </activity>
+        <provider
+            android:authorities="de.devmil.paperlaunch"
+            android:name=".storage.EntriesProvider"
+            android:exported="false" />
     </application>
 
 </manifest>

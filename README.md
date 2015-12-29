@@ -1,5 +1,9 @@
 ![Feature Graphic](images/FeatureGraphic.jpg "Feature Graphic")
 
+#This is a special variant of PaperLaunch for Udacity. It contains some elements that don't make sense for PaperLaunch and are only for educational purpose built into PaperLaunch
+
+
+
 # PaperLaunch
 An Android side launcher in Material design with a strong focus on UX speed and material design.
 Furthermore it allows to organize the Launcher items into a folder structure that easily extends the launcher by so called lanes and integrates into the Launcher selection flow.

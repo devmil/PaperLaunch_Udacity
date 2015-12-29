@@ -4,8 +4,12 @@ package de.devmil.paperlaunch.view.fragments;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -27,6 +31,8 @@ import android.widget.TextView;
 import com.cocosw.bottomsheet.BottomSheet;
 import com.makeramen.dragsortadapter.DragSortAdapter;
 
+import java.security.Provider;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,16 +41,19 @@ import java.util.concurrent.TimeUnit;
 
 import de.devmil.paperlaunch.EditFolderActivity;
 import de.devmil.paperlaunch.R;
+import de.devmil.paperlaunch.config.LaunchConfig;
+import de.devmil.paperlaunch.config.UserSettings;
 import de.devmil.paperlaunch.model.Folder;
 import de.devmil.paperlaunch.model.IEntry;
 import de.devmil.paperlaunch.model.Launch;
-import de.devmil.paperlaunch.config.LaunchConfig;
 import de.devmil.paperlaunch.service.LauncherOverlayService;
 import de.devmil.paperlaunch.storage.EntriesDataSource;
+import de.devmil.paperlaunch.storage.EntriesProvider;
+import de.devmil.paperlaunch.storage.EntriesSQLiteOpenHelper;
 import de.devmil.paperlaunch.storage.FolderDTO;
 import de.devmil.paperlaunch.storage.ITransactionAction;
 import de.devmil.paperlaunch.storage.ITransactionContext;
-import de.devmil.paperlaunch.config.UserSettings;
+import de.devmil.paperlaunch.storage.ProviderHelper;
 import de.devmil.paperlaunch.utils.FolderImageHelper;
 import de.devmil.paperlaunch.view.utils.IntentSelector;
 
@@ -53,10 +62,12 @@ import de.devmil.paperlaunch.view.utils.IntentSelector;
  * Use the {@link EditFolderFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class EditFolderFragment extends Fragment {
+public class EditFolderFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String ARG_PARAM_FOLDERID = "paramFolderId";
     private static final int REQUEST_ADD_APP = 1000;
     private static final int REQUEST_EDIT_FOLDER = 1010;
+
+    private final int LOADER_ID = 100;
 
     private EntriesAdapter mAdapter;
     private RecyclerView mRecyclerView;
@@ -68,7 +79,58 @@ public class EditFolderFragment extends Fragment {
     private Folder mFolder = null;
     LaunchConfig mConfig;
 
+    private static final String[] entriesColumns = new String[]
+            {
+                    EntriesSQLiteOpenHelper.COLUMN_ID,
+                    EntriesSQLiteOpenHelper.COLUMN_ENTRIES_FOLDERID,
+                    EntriesSQLiteOpenHelper.COLUMN_ENTRIES_LAUNCHID,
+                    EntriesSQLiteOpenHelper.COLUMN_ENTRIES_PARENTFOLDERID,
+                    EntriesSQLiteOpenHelper.COLUMN_ENTRIES_ORDERINDEX
+            };
+
+    private static final int INDEX_COLUMN_ID = 0;
+    private static final int INDEX_COLUMN_FOLDERID = 1;
+    private static final int INDEX_COLUMN_LAUNCHID = 2;
+    private static final int INDEX_COLUMN_PARENTFOLDERID = 3;
+    private static final int INDEX_COLUMN_ORDERINDEX = 4;
+
+
     IEditFolderFragmentListener mListener = null;
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        String selection = EntriesSQLiteOpenHelper.COLUMN_ENTRIES_PARENTFOLDERID + " = " + Long.toString(mFolderId);
+
+        return new CursorLoader(
+                getActivity(),
+                ProviderHelper.ENTRIES,
+                entriesColumns,
+                selection,
+                null,
+                EntriesSQLiteOpenHelper.COLUMN_ENTRIES_ORDERINDEX
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        loadData(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        loadData(null);
+    }
+
+    private void restartLoader(){
+        getLoaderManager().restartLoader(LOADER_ID, null, this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        restartLoader();
+    }
 
     public interface IEditFolderFragmentListener {
         void onFolderNameChanged(String newName);
@@ -125,8 +187,6 @@ public class EditFolderFragment extends Fragment {
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayout.VERTICAL, false));
         mRecyclerView.setItemAnimator(new EntriesItemAnimator());
-
-        loadData();
 
         mFolderNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -188,11 +248,11 @@ public class EditFolderFragment extends Fragment {
     }
 
     public void invalidate() {
-        loadData();
+        restartLoader();
     }
 
-    private void loadData() {
-        mRecyclerView.setAdapter(mAdapter = new EntriesAdapter(mRecyclerView, loadEntries()));
+    private void loadData(Cursor data) {
+        mRecyclerView.setAdapter(mAdapter = new EntriesAdapter(mRecyclerView, loadEntries(data)));
         mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -246,7 +306,7 @@ public class EditFolderFragment extends Fragment {
         mRecyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 
-    private List<IEntry> loadEntries() {
+    private List<IEntry> loadEntries(final Cursor data) {
 
         class Local {
             List<IEntry> result;
@@ -256,16 +316,48 @@ public class EditFolderFragment extends Fragment {
         EntriesDataSource.getInstance().accessData(getActivity(), new ITransactionAction() {
             @Override
             public void execute(ITransactionContext transactionContext) {
-                if (mFolderId == -1) {
-                    local.result = transactionContext.loadRootContent();
-                } else {
+                if (mFolderId >= 0) {
                     mFolder = transactionContext.loadFolder(mFolderId);
-                    local.result = mFolder.getSubEntries();
                 }
+                local.result = getEntries(data);
             }
         });
 
         return local.result;
+    }
+
+    private List<IEntry> getEntries(final Cursor data) {
+        List<IEntry> result = new ArrayList<>();
+
+        class Local {
+            IEntry entry;
+        }
+
+        if(data != null && data.moveToFirst()) {
+            do {
+                final Local local = new Local();
+                local.entry = null;
+
+                EntriesDataSource.getInstance().accessData(getActivity(), new ITransactionAction() {
+                    @Override
+                    public void execute(ITransactionContext transactionContext) {
+                        long launchId = data.getLong(INDEX_COLUMN_LAUNCHID);
+                        long folderId = data.getLong(INDEX_COLUMN_FOLDERID);
+                        if(launchId > 0) {
+                            local.entry = transactionContext.loadLaunch(launchId);
+                        } else if(folderId > 0) {
+                            local.entry = transactionContext.loadFolder(folderId);
+                        }
+
+                    }
+                });
+                if(local.entry != null) {
+                    result.add(local.entry);
+                }
+            } while (data.moveToNext());
+        }
+
+        return result;
     }
 
     private void initiateCreateFolder() {
