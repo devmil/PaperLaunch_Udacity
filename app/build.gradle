@@ -5,11 +5,11 @@ android {
     buildToolsVersion '23.0.2'
 
     defaultConfig {
-        applicationId "de.devmil.paperlaunch"
+        applicationId "de.devmil.paperlaunch.udacity"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 3
-        versionName "1.0.2"
+        versionCode 1
+        versionName "1.0.0"
     }
     signingConfigs {
         release {
